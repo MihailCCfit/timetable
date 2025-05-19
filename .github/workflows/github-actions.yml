@@ -53,10 +53,6 @@ jobs:
           min-coverage-overall: 80
           min-coverage-changed-files: 80
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: Package
-          path: ./backend/build/libs
   checkstyle:
     runs-on: ubuntu-latest
     steps:
