@@ -28,7 +28,7 @@ dependencies {
 
 Предварительно собрав исполняемы файл c помощью `build` или `jar`. Запустить можно запустив jar-файл :
 ```shell
-java -jar ./build/timetable-1.0-SNAPSHOT.jar
+java -jar .\build\libs\timetable-1.0-SNAPSHOT.jar
 ```
 
 
