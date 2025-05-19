@@ -29,19 +29,19 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: chmod gradlew
-        working-directory: ./backend
+        working-directory: .
         run: chmod +x ./gradlew
 
       - name: build gradle project
-        working-directory: ./backend
+        working-directory: .
         run: ./gradlew build
 
       - name: Execute Gradle build
-        working-directory: ./backend
+        working-directory: .
         run: ./gradlew test
 
       - name: Generate Jacoco report
-        working-directory: ./backend
+        working-directory: .
         run: ./gradlew jacocoTestReport
 
       - name: Check coverage and publish
