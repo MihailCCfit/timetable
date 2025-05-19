@@ -15,16 +15,16 @@ import java.util.concurrent.Executors;
 public class AlgSimulation {
 
     public static void main(String[] args) throws InterruptedException {
+        //6 - число дней в неделю (некоторый цикл), 7 - число временных ячеек в течении дня
         var timeSetting = new TableTimeSetting(6, 7);
-        GeneticAlgorithmScheduler geneticAlgorithmScheduler = new GeneticAlgorithmScheduler(
-                PenaltyChecker.newBuilder(timeSetting)
-                        .addPenalties(Arrays.stream(PenaltyEnum.values()).map(PenaltyEnum::toPenalty).toList()).build(),
-                timeSetting
-        );
 
-        int audiencesAmount = 50;
-        int lectureAmount = 8;
+        //Далее идет однотипная генерация похожих вещей, можно настраивать разные числа
 
+        int audiencesAmount = 50; // Число аудиторий для практики
+        int lectureAmount = 8; // Число лекционных аудиторий
+
+
+        //Заполнение аудиторий
         List<AudienceEvolve> audienceEvolves = new ArrayList<>(audiencesAmount + lectureAmount);
         for (int i = 1; i <= audiencesAmount; i++) {
             audienceEvolves.add(new AudienceEvolve("S" + i, SubjectType.PRACTICAL));
@@ -33,10 +33,10 @@ public class AlgSimulation {
             audienceEvolves.add(new AudienceEvolve("L" + i, SubjectType.LECTURE));
         }
 
-        int groups = 25;
-        int studyPlans = 8;
+        int groups = 25; //группы
+        int studyPlans = 8; // число планов (чтобы группы не пересекались по лекциям)
 
-        int subjectsPerPlan = 8;
+        int subjectsPerPlan = 8; //Число предметов на каждую группу (на учебный план)
         Map<Integer, List<GroupEvolve>> planNumberToGroups = new HashMap<>();
         Map<Integer, List<SubjectEvolve>> planToSubjects = new HashMap<>();
         Map<Integer, List<TeacherEvolve>> planToLectureTeachers = new HashMap<>();
@@ -48,26 +48,20 @@ public class AlgSimulation {
             planToSeminarTeachers.put(i, new ArrayList<>());
         }
 
-
-        List<GroupEvolve> groupEvolves = new ArrayList<>(groups);
+        //Формирование групп
         for (int i = 1; i <= groups; i++) {
             int studyPlan = i % studyPlans + 1;
             var list = planNumberToGroups.get(studyPlan);
             var group = new GroupEvolve("g:" + i);
             list.add(group);
-            groupEvolves.add(group);
         }
 
+        //Создание учителей
         int teachersAmount = 4800;
         int lectureTeachersAmount = 1600;
-        List<TeacherEvolve> teacherEvolves = new ArrayList<>();
-        List<TeacherEvolve> lectureTeachers = new ArrayList<>();
-        List<TeacherEvolve> seminarTeachers = new ArrayList<>();
         for (int i = 1; i <= teachersAmount; i++) {
             int studyPlan = i % studyPlans + 1;
             TeacherEvolve teacherEvolve = new TeacherEvolve("ts" + i, SubjectType.PRACTICAL);
-            teacherEvolves.add(teacherEvolve);
-            seminarTeachers.add(teacherEvolve);
             planToSeminarTeachers.get(studyPlan).add(teacherEvolve);
 
         }
@@ -75,11 +69,10 @@ public class AlgSimulation {
         for (int i = 1; i <= lectureTeachersAmount; i++) {
             int studyPlan = i % studyPlans + 1;
             TeacherEvolve teacherEvolve = new TeacherEvolve("tl" + i, SubjectType.LECTURE);
-            teacherEvolves.add(teacherEvolve);
-            lectureTeachers.add(teacherEvolve);
             planToLectureTeachers.get(studyPlan).add(teacherEvolve);
         }
 
+        //Заполнение учебных планов и предметов
         planToSubjects.forEach((plaNumber, lsubjList) -> {
             List<TeacherEvolve> lectureT = new ArrayList<>(planToLectureTeachers.get(plaNumber));
             List<TeacherEvolve> seminarT = new ArrayList<>(planToSeminarTeachers.get(plaNumber));
@@ -101,12 +94,26 @@ public class AlgSimulation {
             StudyPlanEvolve studyPlanEvolve = new StudyPlanEvolve(planToSubjects.get(i), planNumberToGroups.get(i));
             plansList.add(studyPlanEvolve);
         }
+        //Начало работы
         Instant instant = Instant.now();
         System.out.println("Start");
         ExecutorService service = Executors.newSingleThreadExecutor();
+
+        //Создание класса составления расписания
+        GeneticAlgorithmScheduler geneticAlgorithmScheduler = new GeneticAlgorithmScheduler(
+                PenaltyChecker.newBuilder(timeSetting)
+                        .addPenalties(Arrays.stream(PenaltyEnum.values()).map(PenaltyEnum::toPenalty).toList()).build(),
+                timeSetting,
+                3,
+                (checkResult -> {
+                    checkResult.penaltyToError().forEach((pen, res) -> {
+                        System.out.println(pen + ":" + res.getSummaryPenalty());
+                    });
+                })
+        );
         var algorithmStatus = geneticAlgorithmScheduler.asyncStart(plansList, audienceEvolves, service, timeSetting);
         algorithmStatus.getResult()
-                .thenAccept(results -> {
+                .thenAccept(results -> { //Асинхронный вывод по получению результата
                     Instant after = Instant.now();
                     System.out.println((double) (Date.from(after).getTime() - Date.from(instant).getTime()) / 1000);
                     System.out.println("total penalty: " + results.get(0).checkResult().total());
@@ -124,6 +131,7 @@ public class AlgSimulation {
                         }
                         return 0;
                     });
+                    //вывод всех занятий
                     List<LessonWithTime> firstLessonForGroup1 = firstAllLessons.stream()
                             .filter(lesson -> lesson.groups().stream().map(GroupEvolve::id).toList().contains("g:1"))
                             .toList();
@@ -143,18 +151,20 @@ public class AlgSimulation {
                         System.out.println(lessons.time() + ": " + lessons);
                     }
                 }).join();
-        while (!geneticAlgorithmScheduler.algorithmProcessingStatus.getResult().isDone()) {
-            var perc = geneticAlgorithmScheduler.algorithmProcessingStatus.getPercentage();
-            System.out.println(perc);
-        }
-        var status = geneticAlgorithmScheduler.algorithmProcessingStatus;
-        while (true) {
-            System.out.println(status.getPercentage());
-            if (status.getResult().isDone()) {
-                break;
-            }
-            Thread.sleep(50);
-        }
+        // Если сверху убрать join, то можно посмотреть как выводятся проценты - прогресс выполнения
+
+//        while (!geneticAlgorithmScheduler.algorithmProcessingStatus.getResult().isDone()) {
+//            var perc = geneticAlgorithmScheduler.algorithmProcessingStatus.getPercentage();
+//            System.out.println(perc);
+//        }
+//        var status = geneticAlgorithmScheduler.algorithmProcessingStatus;
+//        while (true) {
+//            System.out.println(status.getPercentage());
+//            if (status.getResult().isDone()) {
+//                break;
+//            }
+//            Thread.sleep(50);
+//        }
         service.shutdown();
     }
 }

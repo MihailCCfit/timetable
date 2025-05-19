@@ -2,7 +2,7 @@
 
 ## Описание
 
-Написано на Java 17, используя gradle 8.8.
+Java: `Java 17`, используя gradle 8.8.
 
 ### dependency
 
@@ -20,6 +20,17 @@ dependencies {
 `org.projectlombok:lombok` - для удобства и уменьшение повторяющегося кода.
 `io.jenetics:jenetics` - библиотека, использующаяся для генетического алгоритма (отбор, классы хромосом, фенотипов,
 генов и т.д.), частично как фреймворк.
+
+## Запуск проекта для примера
+
+Пример использовавния на множественных данных лежит
+в [AlgSimulation.java](src%2Fmain%2Fjava%2Forg%2Ftimetable%2Falgorithm%2Fexperementations%2FAlgSimulation.java)
+
+Предварительно собрав исполняемы файл c помощью `build` или `jar`. Запустить можно запустив jar-файл :
+```shell
+java -jar ./build/timetable-1.0-SNAPSHOT.jar
+```
+
 
 ## Устройство проекта
 
@@ -114,18 +125,10 @@ var scheduler = new GeneticAlgorithmScheduler(
         timeSetting);
 //Подготавливаем данные
 var algorithmStatus = geneticAlgorithmScheduler.asyncStart(plansList, audienceEvolves, service, timeSetting);
-algorithmStatus.
-
-getResult().
-
-thenAccept(...); // Асинхронно выполним после завершения
+algorithmStatus.getResult().thenAccept(...); // Асинхронно выполним после завершения
 
 var result = algorithmStatus.getResult().join(); // Получаем результат с блокировкой
-result.
-
-get(0).
-
-allLessons(); // Получаем список всех занятий по времени для всех групп и планов.
+result.get(0).allLessons(); // Получаем список всех занятий по времени для всех групп и планов.
 ```
 
 ## Дальнейшее перспективы

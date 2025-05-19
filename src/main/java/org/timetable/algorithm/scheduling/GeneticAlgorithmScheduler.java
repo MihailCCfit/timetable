@@ -11,6 +11,7 @@ import org.timetable.algorithm.scheduling.operators.RandomMutator;
 
 import java.util.*;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 
 public class GeneticAlgorithmScheduler implements AlgorithmScheduler {
@@ -22,6 +23,7 @@ public class GeneticAlgorithmScheduler implements AlgorithmScheduler {
     private PenaltyChecker penaltyChecker;
     private Map<GroupEvolve, List<Integer>> groupToIndexes = new HashMap<>();
     private TableTimeSetting tableTimeSetting;
+    Consumer<PenaltyChecker.CheckResult> observer = (c -> {});
 
     public GeneticAlgorithmScheduler(PenaltyChecker penaltyChecker, TableTimeSetting tableTimeSetting) {
         this.penaltyChecker = penaltyChecker;
@@ -30,9 +32,11 @@ public class GeneticAlgorithmScheduler implements AlgorithmScheduler {
 
     public GeneticAlgorithmScheduler(PenaltyChecker penaltyChecker,
                                      TableTimeSetting tableTimeSetting,
-                                     int satisfiedScheduleAmount) {
+                                     int satisfiedScheduleAmount,
+                                     Consumer<PenaltyChecker.CheckResult> observer) {
         this.penaltyChecker = penaltyChecker;
         this.satisfiedScheduleAmount = satisfiedScheduleAmount;
+        this.observer = observer;
     }
 
     public final AlgorithmProcessingStatus algorithmProcessingStatus = new AlgorithmProcessingStatus();
@@ -71,7 +75,7 @@ public class GeneticAlgorithmScheduler implements AlgorithmScheduler {
         int maxCounter = 12000;
         double prev = -1e10;
         int i = 0;
-        algorithmProcessingStatus.percentage = 1;
+        algorithmProcessingStatus.percentage = 0;
         var initialCheck = penaltyChecker.calculatePenalty(phenotypeToLessons(evolutionResult.bestPhenotype()));
         algorithmProcessingStatus.checkResult = initialCheck;
         double initialMaximum = initialCheck.total();
@@ -84,14 +88,13 @@ public class GeneticAlgorithmScheduler implements AlgorithmScheduler {
             } else {
                 prev = bestResult;
                 i++;
-                algorithmProcessingStatus.percentage = initialMaximum != 0 ? bestResult / initialMaximum : 0;
+                algorithmProcessingStatus.percentage = initialMaximum != 0 ? 1 - bestResult / initialMaximum : 0;
                 if (i >= 2) {
                     i = 0;
                     PenaltyChecker.CheckResult checkResult =
                             penaltyChecker.calculatePenalty(phenotypeToLessons(evolutionResult.bestPhenotype()));
-                    checkResult.penaltyToError().forEach((pen, res) -> {
-                        System.out.println(pen + ":" + res.getSummaryPenalty());
-                    });
+                    observer.accept(checkResult);
+
                     algorithmProcessingStatus.checkResult = checkResult;
                 }
                 maxCounter = 12000;
