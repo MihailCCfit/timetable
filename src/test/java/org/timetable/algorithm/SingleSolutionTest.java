@@ -54,15 +54,15 @@ public class SingleSolutionTest {
 
         var res = result.get(0);
         for (LessonWithTime lesson : res.allLessons()) {
-            if (lesson.lessonGene().subject().id().equals("s1")){
+            if (lesson.lessonGene().subject().id().equals("s1")) {
                 Assertions.assertEquals(0, lesson.cell().time().toIndex());
                 Assertions.assertEquals("a1", lesson.cell().audience().id());
             }
-            if (lesson.lessonGene().subject().id().equals("s2")){
+            if (lesson.lessonGene().subject().id().equals("s2")) {
                 Assertions.assertEquals(1, lesson.cell().time().toIndex());
                 Assertions.assertEquals("a2", lesson.cell().audience().id());
             }
-            if (lesson.lessonGene().subject().id().equals("s3")){
+            if (lesson.lessonGene().subject().id().equals("s3")) {
                 Assertions.assertEquals(3, lesson.cell().time().toIndex());
                 Assertions.assertEquals("a2", lesson.cell().audience().id());
             }

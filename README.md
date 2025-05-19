@@ -6,25 +6,23 @@
 ## Устройство проекта
 
 ### Модель
-
 Основные классы находятся в [model](src%2Fmain%2Fjava%2Forg%2Ftimetable%2Falgorithm%2Fmodel).
 
 ### Штрафы
-
 В [constraints](src%2Fmain%2Fjava%2Forg%2Ftimetable%2Falgorithm%2Fconstraints) содержатся классы предзназначенные для
 подсчета штрафов.
 
 ### Алгоритм
-
 В [scheduling](src%2Fmain%2Fjava%2Forg%2Ftimetable%2Falgorithm%2Fscheduling) находится основной код алгоритмов
 
 ### Эксперименты
-
 В [experementations](src%2Fmain%2Fjava%2Forg%2Ftimetable%2Falgorithm%2Fexperementations) вы можете увидеть примеры
-запуска.
+запуска. Здесь заполняются данные разными многочисленными значениями, используетс в основном ради тестов, перебора
+разных вариантов.
 
 ## Использование
 
+### На вход
 Входной точкой использования является
 класс [AlgorithmScheduler.java](src%2Fmain%2Fjava%2Forg%2Ftimetable%2Falgorithm%2Fscheduling%2FAlgorithmScheduler.java)
 Или можно использовать
@@ -40,6 +38,11 @@ FYI: почему преподаватели задаются заранее а 
 предметам,
 нередко у группы повторятся один и тот же преподаватель на разны предметах. А для алгоритма возможность перебирать
 преподавателей на самом деле не добавляет практически новых возможностей.
+
+### Выходные данные
+В зависимости от значения satisfiedScheduleAmount (базовое 3), буде возвращен лист из данного числа результатов. Каждый
+результат - готовое расписание, вместе с информацией о нарушенных ограничениях. Передаются лучшие из найденных, если
+таковых несколько, или не было найдено абсолютного решения.
 
 ### Асинхронно
 
@@ -68,4 +71,20 @@ var lambdaPenalty = (data) -> {
     }
     return ok();
 };
+```
+
+### Использование в коде
+В начале создаем скедулер
+```java
+var penalties = Arrays.stream(PenaltyEnum.values()).map(PenaltyEnum::toPenalty).toList();
+penalties.add(...); // Добавляем свои ограничения
+var scheduler = new GeneticAlgorithmScheduler(
+                PenaltyChecker.newBuilder(timeSetting)
+                        .addPenalties(penalties).build(),
+                timeSetting);
+//Подготавливаем данные
+var algorithmStatus = geneticAlgorithmScheduler.asyncStart(plansList, audienceEvolves, service, timeSetting);
+algorithmStatus.getResult().thenAccept(...); // Асинхронно выполним после завершения
+var result = algorithmStatus.getResult().join(); // Получаем результат с блокировкой
+result.get(0).allLessons(); // Получаем список всех занятий по времени для всех групп и планов.
 ```

@@ -7,14 +7,10 @@ on:
     branches: [ "main" ] # "master" Если ветка дефолтная - мастер (если локально создавали)
     paths-ignore:
       - '**.md'
-  push:
-    branches: [ "master" ]
-    paths-ignore:
-      - '**.md'
   workflow_dispatch:
 
 jobs:
-  backend:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

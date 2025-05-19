@@ -120,20 +120,20 @@ public class PenaltyChecker {
         Map<Penalty, PenaltyResult> penaltyToError = new HashMap<>();
         var checkResult = new CheckResult(penaltyToError);
         lessonWithTimes.forEach(lesson -> {
-            var data = new DataForConstraint(lessonWithTimes, lesson, allLessons, tableTimeSetting);
-            penalties.forEach(penalty -> {
-                var calculateResult = penalty.penaltyFunction.apply(data);
-                var value = calculateResult.value();
-                if (value < 0) {
-                    if (!penaltyToError.containsKey(penalty)) {
-                        penaltyToError.put(penalty, new PenaltyResult());
-                    }
-                    PenaltyResult result = penaltyToError.get(penalty);
-                    result.summaryPenalty += value;
-                    checkResult.total += value;
-                    result.problemLessons.add(new ProblemLesson(data.currentLesson(), calculateResult.message()));
-                }
-            });
+                    var data = new DataForConstraint(lessonWithTimes, lesson, allLessons, tableTimeSetting);
+                    penalties.forEach(penalty -> {
+                        var calculateResult = penalty.penaltyFunction.apply(data);
+                        var value = calculateResult.value();
+                        if (value < 0) {
+                            if (!penaltyToError.containsKey(penalty)) {
+                                penaltyToError.put(penalty, new PenaltyResult());
+                            }
+                            PenaltyResult result = penaltyToError.get(penalty);
+                            result.summaryPenalty += value;
+                            checkResult.total += value;
+                            result.problemLessons.add(new ProblemLesson(data.currentLesson(), calculateResult.message()));
+                        }
+                    });
                 }
         );
         return checkResult;

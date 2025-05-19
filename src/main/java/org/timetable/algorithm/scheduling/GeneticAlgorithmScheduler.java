@@ -13,7 +13,6 @@ import java.util.*;
 import java.util.concurrent.Executor;
 
 
-
 public class GeneticAlgorithmScheduler implements AlgorithmScheduler {
     private ArrayList<AudienceTimeCell> cells = new ArrayList<>();
     private Map<SubjectType, List<AudienceTimeCell>> audienceMap = new HashMap<>();
