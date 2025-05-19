@@ -44,9 +44,13 @@ jobs:
         working-directory: .
         run: ./gradlew jacocoTestReport
 
+      - name: Generate Jacoco report
+        working-directory: .
+        run: ./gradlew testCoverage
+
       - name: Check coverage and publish
         id: jacoco
-        uses: madrapps/jacoco-report@v1.2
+        uses: madrapps/jacoco-report@v1.7.2
         with:
           paths: ./build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
