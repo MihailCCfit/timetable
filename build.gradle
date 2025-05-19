@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+}
+
+java {
+    sourceCompatibility = '17'
+}
+
+group = 'org.timetable'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation 'io.jenetics:jenetics:7.2.0'
+    implementation 'io.jenetics:prngine:2.0.0'
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.required = true
+        //html.outputLocation = layout.buildDirectory.dir('jacocoHtml') Доп опция, чтобы у себя можно было открыть html
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "Main.class",
+                    //"<package>.Main.class" Указывайте полное имея пакета с точками
+            ])
+        }))
+    }
+}
