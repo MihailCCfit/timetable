@@ -1,5 +1,6 @@
 package org.timetable.algorithm.experementations;
 
+import org.timetable.algorithm.constraints.CalculateResult;
 import org.timetable.algorithm.constraints.Penalty;
 import org.timetable.algorithm.constraints.PenaltyChecker;
 import org.timetable.algorithm.constraints.PenaltyEnum;
@@ -94,15 +95,35 @@ public class AlgSimulation {
             StudyPlanEvolve studyPlanEvolve = new StudyPlanEvolve(planToSubjects.get(i), planNumberToGroups.get(i));
             plansList.add(studyPlanEvolve);
         }
+
+
         //Начало работы
         Instant instant = Instant.now();
         System.out.println("Start");
         ExecutorService service = Executors.newSingleThreadExecutor();
 
+        //Произвольный штраф
+        Penalty mondayPenalty = new Penalty(
+                "FirstLessonMondayPenalty:(",
+                (dataForConstraint -> {
+                    var lesson = dataForConstraint.currentLesson();
+                    if (lesson.cell().time().toIndex() == 0) {
+                        return CalculateResult.problem(-1.0, "Monday:(");
+                    } else {
+                        return CalculateResult.ok();
+                    }
+                }),
+                false
+        );
+        //Создание класса проверяющего штрафы
+        PenaltyChecker penaltyChecker = PenaltyChecker.newBuilder(timeSetting)
+                .addPenalties(Arrays.stream(PenaltyEnum.values()).map(PenaltyEnum::toPenalty).toList())
+                .addPenalty(mondayPenalty)
+                .build();
+
         //Создание класса составления расписания
         GeneticAlgorithmScheduler geneticAlgorithmScheduler = new GeneticAlgorithmScheduler(
-                PenaltyChecker.newBuilder(timeSetting)
-                        .addPenalties(Arrays.stream(PenaltyEnum.values()).map(PenaltyEnum::toPenalty).toList()).build(),
+                penaltyChecker,
                 timeSetting,
                 3,
                 (checkResult -> {

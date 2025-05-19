@@ -78,7 +78,7 @@ public class SingleSolutionTest {
         //Only one Solution is correct
         penalties.addAll(List.of(
                 new Penalty(
-                        "s1p",
+                        "CorrectPlacePenalty",
                         (dataForConstraint -> {
                             var lesson = dataForConstraint.currentLesson();
                             if (lesson.lessonGene().subject().id().equals("s1")) {
